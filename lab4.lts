@@ -29,3 +29,20 @@ THROTTLESTATUS = (setThrottle -> zoom -> setThrottle -> zoom -> THROTTLESTATUS).
 
 ||TESTENGINE = (SENSORSCANSTATUS||CRUISECONTROLLERSTATUS||SPEEDCONTROLLERSTATUS||INPUTSPEEDSTATUS||THROTTLESTATUS).
 ||TEST2 = (CRUISECONTROLSYSTEM||TESTENGINE).
+
+//Ej3
+//a)
+//Buscamos encontrar una traza que eventualmente llegue a un estado Q donde el usuario haya hecho GoToLoc, pero despues de eso la 
+//accion "arrived" no se haya realizado. El punto es que en ese estado Q, sea imposible realizar un abort y aterrizar.
+//Primero intentamos que el deadlock se realize despues del abort 
+//La idea seria una traza que tenga xxxxx->goToLoc->abort->goDown->down->land, pero que por el no determinismo del sistema
+//el automata generado por CONTROLLER, cuando este en IDLE y se haga goDown, en vez de tomar el camino de goDown->down->IDLE, tome el de
+//goDown->IDLE, y alli entraria en deadlock ya que down es una accion de controller que solo se ejecuta despues de un goDown
+//Por el no determinismo es posible llegar a esta situacion
+//
+//b)
+//Analogo a lo anterior. Si se solicita un takeOff desde el controller, el no determinismo es tal que se puede hacer un "up" y que este lleve
+//al subproceso TAKINGOFF de vuelta, o al subproceso (takenOff-> IDLE | abort->IDLE). Por esto si creamos un proceso P takenOff->up->abort
+//es posible que por el no determinismo el controllador pase de "up" a TAKINGOFF y entre en deadlock porque nuestro P espera la accion
+//"takenOff" mientras que el CONTROLLER sigue en TAKINGOFF con solo las acciones up o abort
+//
